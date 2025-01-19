@@ -124,4 +124,36 @@ console.assert(b2);
 console.log(`TCO version took ${endTime_TCO - startTime_TCO} milliseconds`);
 
 //////////////////////////////////////////////////////
-// III - "Bean Counting" (WIP)
+// III - "Bean Counting" 
+
+function countBs_FirstDraft(string) {
+  let counter = 0;
+  for (let i = 0 ; i < string.length ; i++) {
+    counter += (string[i] === "B");
+  }
+  return counter;
+}
+
+function countChar(string, char) {
+  let counter = 0;
+  for (let i = 0 ; i < string.length ; i++) {
+    counter += (string[i] === char);
+  }
+  return counter;
+}
+
+function countBs(string) { 
+  return countChar(string, "B");
+}
+
+function testCountBs(funcCountBs) {
+  console.log(`Testing ${funcCountBs.name}`);
+  console.log(funcCountBs("babar")); // 0
+  console.log(funcCountBs("Babar")); // 1
+  console.log(funcCountBs("BaBar")); // 2
+  console.log(funcCountBs("BaBar's BarBapapa")); // 4
+}
+
+testCountBs(countBs_FirstDraft); 
+testCountBs(countBs); 
+console.log("Testing countChar:" , countChar("Abracadabra", "a")); // 4
