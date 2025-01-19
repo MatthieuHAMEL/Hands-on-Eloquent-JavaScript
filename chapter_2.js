@@ -31,11 +31,20 @@ function ex_2() {
 // "Chessboard"
 function ex_3() {
   const size = 19;
-  const r = size % 2; // Integer division below: 
-  const line_base = ("# ".repeat((size - r) / 2) + ((r == 1) ? '#' : '')).slice(0, -1);
+  const r = size % 2; // For integer division below:
+  
+  // Repeat the pattern (# + space) size/2 times. If size is even, strip the last space.
+  // So line_base is 'size-1' characters long whether 'size' is even or not.
+  let line_base = "# ".repeat((size - r) / 2);
+  if (r == 0) {
+    line_base.slice(0, -1);
+  }
+
+  // Shift line_base 2 times. Subtlety for an odd size where we have to add a # one line over two. 
   const line_one = ' ' + line_base + '\n'; 
-  const line_two = line_base + ' \n'; // That end space is not visible here but useful in a "real" grid context ...
-  // Now I just have to alternate between line_one ans line_two  
+  const line_two = line_base + ((r == 1) ? '#' : ' ') + '\n'; // That end space is not visible here but useful in a "real" grid context ...
+  
+  // Now just alternate between line_one and line_two  
   let chessboard = '';
   for (let i = 0; i < size; i++) {
     chessboard += (i%2 == 0) ? line_one : line_two; 
@@ -45,4 +54,4 @@ function ex_3() {
 
 //////////////////////////////////////////////////////
 // Launch what you want : 
-ex_1();
+ex_3();
