@@ -5,6 +5,22 @@
 let myArray = [2, 3, 9, "Babar", -150, null, 3.14];  
 console.log(myArray); 
 
+// Array spreading :
+let words = ["never", "fully"];
+console.log(["will", ...words, "understand"]);
+
+// Function with a variable number of parameters : 
+function max(...numbers) { // spreads to an array ... 
+  let result = -Infinity;
+  for (let number of numbers) {
+    if (number > result) result = number;
+  }
+  return result;
+}
+
+// Destructuring 
+let [name, age] = ["Babar", 80]; 
+
 /////////////////////////////////////////
 // 2. PROPERTIES 
 function myFunction() {}
@@ -58,6 +74,11 @@ let journal = [];
   // that shortcut is valid as long as the variable and the property names are the same.
 }
 
+// Access to a property if we don't know if it exists in the object
+function city(object) {
+  return object.address?.city;
+}
+
 /////////////////////////////////////////
 // 5. MUTABILITY 
 
@@ -72,3 +93,17 @@ const score = {visitors: 0, home: 0};
 // score = { visitors: 1, home: 0 }; // Not possible. it's const (try it!)
 score.visitors = 1; // Still possible to mutate data members 
 
+/////////////////////////////////////////
+// Exercises 
+
+// I - Range 
+function range(start, end) {
+  // Directly initialize the array with the right number of parameters: 
+  let arr = Array(end-start+1);
+  for (let i = 0; i < end-start+1; i++) {
+    arr[i] = start + i;
+  }
+  return arr;
+}
+
+console.log(range(15, 25));
