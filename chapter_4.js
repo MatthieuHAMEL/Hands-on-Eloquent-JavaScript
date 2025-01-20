@@ -238,3 +238,54 @@ console.log(nth(myOtherList, 0));
 console.log(nth(myOtherList, 3));
 console.log(nth(myOtherList, 4));
 console.log(nth(myOtherList, 5));
+
+/////////////////////////////////////////
+// III - Deep comparison 
+
+function deepEqual(iVal_1, iVal_2) {
+  // Distinction with null values not to fall through the "object" case.
+  if (iVal_1 === iVal_2) { // Same underlying object
+    return true;
+  }
+  else if (iVal_1 == null || iVal_2 == null) {
+    return false; // If they're both null we'd have taken the first if()
+  }
+  else if (typeof iVal_1 != typeof iVal_2) {
+    return false;
+  }
+  else if (typeof iVal_1 == "object") { // And thus iVal_2 is object too
+    if (Object.keys(iVal_1).length != Object.keys(iVal_2).length) {
+      return false;
+    }
+    for (let prop of Object.keys(iVal_1)) {
+      if (!(Object.keys(iVal_2).includes(prop))) {
+        return false;
+      }
+
+      if (!deepEqual(iVal_1[prop], iVal_2[prop])) {
+        return false;
+      }
+
+      // Primitive cases and heterogeneous types...
+      if (typeof iVal_1[prop] != "object" || typeof iVal_2[prop] != "object") {
+        if (iVal_1[prop] !== iVal_2[prop]) { // The strict operator excludes heterogenous values
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+const obj1 = {x: 20, y:"Babar"};
+const obj2 = {y:"Babar", x:20};
+console.log(deepEqual(obj1, obj2)); // T
+
+const obj3 = {y:"Babarr", x:20};
+console.log(deepEqual(obj3, obj1)); // F
+
+const obj4 = {x: 20, y:"Babar", z: {x: 140, n: "Hey"}};
+const obj5 = {y:"Babar", x:20, z: {x: 140, n: "Hey"}};
+const obj6 = {y:"Babar", x:20, z: {x: 141, n: "Hey"}};
+console.log(deepEqual(obj4, obj5)); // T
+console.log(deepEqual(obj4, obj6)); // F
