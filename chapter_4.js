@@ -29,7 +29,7 @@ console.log(myFunction["name"]) // Explicit access to the object's properties ha
 
 /////////////////////////////////////////
 // 3. METHODS 
-let myString = "Babar"; 
+const myString = "Babar"; 
 console.log(myString.toUpperCase); // Will log some special message stating it's a function 
 console.log(typeof myString.toUpperCase); // ... indeed
 console.log(myString.toUpperCase()); // Call that method !
@@ -100,7 +100,7 @@ score.visitors = 1; // Still possible to mutate data members
 // I - Range 
 function range(start, end) {
   // Directly initialize the array with the right number of parameters: 
-  let arr = Array(end-start+1);
+  let arr = new Array(end-start+1);
   for (let i = 0; i < end-start+1; i++) {
     arr[i] = start + i;
   }
@@ -156,7 +156,7 @@ function reverseArrayInPlace(ioArr) {
   // I'll swap ioArr[n] with ioArr[LEN-n-1] for every n in [|0, LEN//2|]
   // We'll go from 0 to that middle index (LEN//2) below. If there's an odd 
   // number of parameters, the element is the middle won't change anyway.
-  let middle_idx = (ioArr.length - ioArr.length % 2) / 2;
+  const middle_idx = (ioArr.length - ioArr.length % 2) / 2;
 
   for (let i = 0; i < middle_idx; i++) {
     [ioArr[i], ioArr[ioArr.length - i - 1]] = [ioArr[ioArr.length - i - 1], ioArr[i]]; // swap!
@@ -176,4 +176,65 @@ console.log(arr_2);
 reverseArrayInPlace(arr_2);
 console.assert(arr_2_asString === JSON.stringify(arr_2));
 
+/////////////////////////////////////////
+// II - A List (linked list)
 
+// I could also have opted for a recursive version (rest = arrayToList(iArr.slice(1)))
+function arrayToList(iArr) {
+  // I start from the end which is not linked to anything. 
+  let list = {value: iArr[iArr.length-1], rest: null};
+  for (let i = iArr.length-2; i >= 0; i--) {
+    list = {value: iArr[i], rest:list};
+  }
+  return list;
+}
+
+console.log(arrayToList([3, 4, 5]));
+
+function listToArray(iList) {
+  let refList = iList; // To iterate on the list
+  let oArr = [refList.value];
+  while (refList.rest != null) {
+    refList = refList.rest;
+    oArr.push(refList.value);
+  }
+  return oArr;
+}
+
+let list = {
+  value: 1,
+  rest: {
+    value: 2,
+    rest: {
+      value: 3,
+      rest: null
+    }
+  }
+};
+
+let myArr = listToArray(list);
+console.log(myArr);
+
+function prepend(iElt, ioList) {
+  return {value: iElt, rest: ioList};
+}
+
+let myOtherList = prepend("Babar", list);
+console.log(myOtherList);
+
+function nth(iList, iIdx) {
+  if (iIdx == 0) {
+    return iList;
+  }
+  else if (iList === null) {
+    return null;
+  }
+
+  return nth(iList.rest, iIdx-1);
+}
+
+console.log(nth(myOtherList, 1));
+console.log(nth(myOtherList, 0));
+console.log(nth(myOtherList, 3));
+console.log(nth(myOtherList, 4));
+console.log(nth(myOtherList, 5));
