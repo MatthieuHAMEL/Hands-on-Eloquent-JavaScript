@@ -257,6 +257,7 @@ function deepEqual(iVal_1, iVal_2) {
     if (Object.keys(iVal_1).length != Object.keys(iVal_2).length) {
       return false;
     }
+    // /!\ An array is an object! So this loop iterates over anything ([...], {...})
     for (let prop of Object.keys(iVal_1)) {
       if (!(Object.keys(iVal_2).includes(prop))) {
         return false;
