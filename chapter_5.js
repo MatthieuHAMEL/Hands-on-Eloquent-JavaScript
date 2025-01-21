@@ -55,5 +55,28 @@ function myForEach(iArray, iAction) {
 
 myForEach(["A", "B"], l => console.log(l));
 
-console.log(SCRIPTS);
-console.log(typeof SCRIPTS);
+// This is my attempt of using reduce() to find the most recent script
+// without having read the book's solution : 
+let newest = SCRIPTS.reduce((a, b) => {return (a.year > b.year) ? a : b});
+console.log(newest);
+
+// The callback function in reduce() takes two parameters: the accumulator and the current value.
+// If we don't give any start index, which is what I did right before, it sets the first value 
+// as the accumulator(a) and the second value to b
+
+// This is by pure cultural curiosity 
+let oldest = SCRIPTS.reduce((a, b) => {return (a.year < b.year) ? a : b});
+console.log(oldest);
+
+// This is for finding the script with the most characters : 
+function characterCount(script) {
+  return script.ranges.reduce(
+    (count, [from, to]) => {
+      return count + (to - from);
+    }, 0);
+}
+
+console.log(SCRIPTS.reduce((a, b) => {
+  return characterCount(a) < characterCount(b) ? b : a;
+}));
+
