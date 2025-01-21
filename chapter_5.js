@@ -56,13 +56,13 @@ function myForEach(iArray, iAction) {
 myForEach(["A", "B"], l => console.log(l));
 
 // This is my attempt of using reduce() to find the most recent script
-// without having read the book's solution : 
+// without having read the book's reduce() examples : 
 let newest = SCRIPTS.reduce((a, b) => {return (a.year > b.year) ? a : b});
 console.log(newest);
 
 // The callback function in reduce() takes two parameters: the accumulator and the current value.
-// If we don't give any start index, which is what I did right before, it sets the first value 
-// as the accumulator(a) and the second value to b
+// If we don't give any "start value", which is what I did right before, the 
+// accumulator(a) is set to the first element, and b to the second element.
 
 // This is by pure cultural curiosity 
 let oldest = SCRIPTS.reduce((a, b) => {return (a.year < b.year) ? a : b});
@@ -73,10 +73,34 @@ function characterCount(script) {
   return script.ranges.reduce(
     (count, [from, to]) => {
       return count + (to - from);
-    }, 0);
+    }, 0); // We count from zero
 }
 
 console.log(SCRIPTS.reduce((a, b) => {
   return characterCount(a) < characterCount(b) ? b : a;
 }));
+
+/////////////////////////////////////////
+// 2. Unicode
+
+// JavaScript strings are UTF-16, which means characters (code points) can be 1 code unit long, 
+// or 2 code units long. 
+let horseShoe = "🐴👟";
+console.log(horseShoe.length); // 4 ! length counts the code units and not the code points!
+console.log(horseShoe[0]); // Half-character
+console.log(horseShoe[1]); // The second half of the Horse character
+console.log(horseShoe.charCodeAt(0)); // → 55357 (Code of the half-character): not very useful
+console.log(horseShoe.codePointAt(0)); // OK (code of the Horse character)
+
+// Not relevant, it gives the char code of the half character unit...
+console.log(horseShoe.codePointAt(1)); 
+// ... since we're not pointing to the beginning of a code point. 
+// So we can't just loop from 0 to length and print every codePointAt(), as their 
+// indexing is by code unit.
+
+// Fortunately the for..of loop does loop on real characters and not code units
+let roseDragon = "🌹🐉";
+  for (let char of roseDragon) {
+  console.log(char); // Then we can use safely codePointAt(char[0])
+}
 
