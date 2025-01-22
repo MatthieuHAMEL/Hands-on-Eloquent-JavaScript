@@ -128,3 +128,88 @@ function loop(iVal, funcTest, funcUpdate, funcBody) {
 
 loop(5, v => (v <= 10), v => v+1, console.log);
 
+/////////////////////////////////////////
+// III. "Everything"
+
+// Test data
+function isEven(iInt) {
+  return (iInt % 2 == 0);
+}
+let myArrEven = [2, 4, 2, 0, -4, 888];
+let myArrNotCompletelyEven = [2, 4, 2, -1, -4, 888];
+
+// 1) Simple, with a loop. 
+function every(iArr, funcTest) {
+  for (let e of iArr) {
+    if (!funcTest(e)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+console.log(every(myArrEven, isEven));
+console.log(every(myArrNotCompletelyEven, isEven));
+console.log(every(myArrEven, v => (typeof v == "number")));
+console.log(every(SCRIPTS, v => (typeof v == "number")));
+
+// 2) Using some()
+// "every element satisfies the predicate" is the negation of "there is one element not satisfying the predicate"
+function every2(iArr, funcTest) {
+  return !iArr.some(v => !funcTest(v));
+}
+
+console.log("--------------------");
+console.log(every2(myArrEven, isEven));
+console.log(every2(myArrNotCompletelyEven, isEven));
+console.log(every2(myArrEven, v => (typeof v == "number")));
+console.log(every2(SCRIPTS, v => (typeof v == "number")));
+
+/////////////////////////////////////////
+// IV. "Dominant Writing Direction" 
+
+function characterScript(code) {
+  for (let script of SCRIPTS) {
+    if (script.ranges.some(([from, to]) => {
+      return code >= from && code < to;
+    })) {
+      return script;
+    }
+  }
+  return null;
+}
+
+function countBy(items, groupName) {
+  let counts = [];
+  for (let item of items) {
+    let name = groupName(item);
+    let known = counts.find(c => c.name == name);
+    if (!known) {
+      counts.push({name, count: 1});
+    } else {
+      known.count++;
+    }
+  }
+  return counts;
+}
+
+let text = "Some text in latin alphabet";
+let text2 = "أهلا وسهلا";
+let text3 = "أهلا وسهلا ma con molti caratteri latini";
+let text4 = "              "; // None of those spaces are in a script 
+function getWritingDirection(iText) {
+  return countBy(iText, (char) => {
+    let script = characterScript(char.codePointAt(0));
+    return script ? script.direction : "none";
+    }).filter(({name}) => name != "none") // This array can be empty ! ... 
+      .reduce((acc, nameCountPair) => { // ... OK with reduce's 'null' default value and ?.name
+        if (nameCountPair.count > (acc?.count || 0)) {
+          return nameCountPair;
+        }}, null)
+      ?.name || "No known character";
+}
+console.log(getWritingDirection(text)); // ltr
+console.log(getWritingDirection(text2)); // rtl
+console.log(getWritingDirection(text3)); // ltr
+console.log(getWritingDirection(text4)); // "No known character"
+
