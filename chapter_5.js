@@ -104,3 +104,27 @@ let roseDragon = "🌹🐉";
   console.log(char); // Then we can use safely codePointAt(char[0])
 }
 
+/////////////////////////////////////////
+// Exercises 
+/////////////////////////////////////////
+// I. "Flattening"
+let myArrayOfArrays = [[3, 4], ["Babar", 6], [2]];
+
+function flatten(iArr) {
+  return iArr.reduce((acc, elt) => acc.concat(elt));
+}
+
+let myFlattenedArray = flatten(myArrayOfArrays);
+console.log(myFlattenedArray);
+
+/////////////////////////////////////////
+// II. "Your own loop"
+
+function loop(iVal, funcTest, funcUpdate, funcBody) {
+  for(let iter = iVal; funcTest(iter); iter = funcUpdate(iter)) {
+    funcBody(iter);
+  }
+}
+
+loop(5, v => (v <= 10), v => v+1, console.log);
+
