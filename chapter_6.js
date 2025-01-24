@@ -260,4 +260,52 @@ let myTemperature = Temperature.fromFahrenheit(100);
 // to make available to the user. 
 
 /////////////////////////////////////////
-// 8. Symbols 
+// 8. Symbols
+
+// "Interfaces" is not a real JS concept since JS uses duck-typing. 
+// so an object implements an interface if it has the various properties and 
+// methods that may be called by objects interacting with instances of this interface. 
+
+// e.g. an interface "geometry" implicitly defined by that getSize function
+// It requires object to have a numeric 'size' property and a 'metric_system' bool.
+// This is actual polymorphism, as several different types can indeed comply to this spec.
+
+function getSize(obj) {
+  if (!obj.metric_system) {
+    console.log("Warning: object uses a custom, prehistorical measurement system");
+  }
+  return obj.size;
+}
+
+// An object can implement to several interfaces, e.g. an object complying to "geometry"
+// can also implement an interface "physics" with weight, a function to increase the object 
+// weight, etc. 
+
+// We have a real problem though, if two pieces of code  define two 
+// interfaces requiring a homonym property : e.g. an array-like object having a length 
+// property (this is needed to work with the for..of loop, for instance), but that object 
+// may be passed to a function that expects "length" to be the length of a road and not 
+// the number of elements of the object. 
+
+// Symbols (2015) solve this problem, or at least it avoids 3rd-party code to 
+// wrongly use our property P if we called them with the same name 'P', 
+// without the intention to comply to that code. 
+let sym = Symbol("name");
+console.log(sym == Symbol("name")); // false: it just created another symbol here 
+
+Rabbit.prototype[sym] = 55;
+console.log(killerRabbit[sym]);
+
+const length = Symbol("length");
+let myTrip = {
+  length: 2,
+  0: "Lankwitz",
+  1: "Babelsberg",
+  [length]: 21500 // No external code will ever access this. I am the symbol owner, and it's unique!
+};
+
+console.log(myTrip[length], myTrip.length);
+
+/////////////////////////////////////////
+// 9. The iterator interface 
+
