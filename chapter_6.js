@@ -1,5 +1,5 @@
 // Chapter 6 : OOP
-
+/////////////////////////////////////////
 // 1. Methods
 // In JS, a method is a property that is actually a function. So we define 
 // it like a property : 
@@ -28,6 +28,7 @@ let point2 = {
 point2.translate(5, 5);
 console.log(point2);
 
+/////////////////////////////////////////
 // 2. Prototypes and OOP : producing instances of objects 
 // I can do this to produce points : 
 
@@ -71,65 +72,58 @@ let protoRabbit = {
 let blackRabbit = Object.create(protoRabbit);
 blackRabbit.type = "black";
 blackRabbit.speak("I am fear and darkness");
-console.log(blackRabbit.x);
 
 // The objects created from the prototype will have the same methods. So it's as if they were
 // all instances of the same ... class.
+// The problem is that it is quite error-prone : for example the speak() method refers to "this.type"
+// As there is no real interface/contract/attribute list, it's easy to create an object from 
+// the prototype and forget about defining that property. We have to set that "type" property 
+// manually. 
 
-// 3. Classes (introduced in 2015)
-// As we saw prototypes are nothing more than objects. We do Object.create(proto) to 
-// create objects sharing the proto's properties. But this may be error-prone: 
-// for example the speak() method of protoRabbit refers to the property "this.type". 
-// As there is no contract, no real interface nor attribute list, it is easy to 
-// create an object from the proto and forget about defining that property. We have to 
-// set that "type" property manually. 
+// Constructors are like the newPoint method we created before : they encapsulate "what's needed"
+// to build an object but they also specify the attributes of the object.
 
-// Classes are closer to what is done in modern OOP, as it defines the shape of an object, 
-// i.e. its methods and properties. 
-
-// This is what a constructor would look like if we had only prototypes to play with 
-function makeRabbit(type) {
-  let rabbit = Object.create(protoRabbit);
-  rabbit.type = type;
-  return rabbit;
-}
-
-// Basically it is a function ensuring the necessary properties are defined on the resulting objects.
-// The class syntax does that more formally : 
-
-class Rabbit {
-  constructor(type) { // It is a special function 
-    this.type = type; // Here we declare the various data attributes
-  }
-
-  speak(line) {
-    console.log(`The ${this.type} rabbit says '${line}'`);
-  }
-}
-
-// So a class == {a prototype defining methods} + {a set of attributes specified by a constructor}
-
-// This is how we call a constructor : 
-let killerRabbit = new Rabbit("killer");
-
-// The class name 'Rabbit' is assimilated to its constructor.
-console.log(Object.getPrototypeOf(Rabbit) == Function.prototype);
-console.log(Object.getPrototypeOf(killerRabbit) == Rabbit.prototype);
-
-// Indeed in the past we defined constructors manually like this : 
+// This is the "old way" of defining constructors : 
 function ArchaicRabbit(type) { // With a capital letter to know we want to define a type 
-  this.type = type;
+  this.type = type; // Creates the type property !
 }
-let myArchaicRabbit = new ArchaicRabbit("old school");
+let myArchaicRabbit = new ArchaicRabbit("old school"); // Call the constructor
 
-// To add methods on those types we did : 
+// To add methods on those types we do : 
 ArchaicRabbit.prototype.someMethod = function(a) {
   // ...
 };
 
-// That is why functions, still today, have a property named "prototype". 
+/////////////////////////////////////////
+// 3. Classes (introduced in 2015)
+// Classes are closer to what is done in modern OOP, as it defines the shape of an object, 
+// i.e. its methods and properties, in a more expressive way : 
+
+class Rabbit {
+  constructor(type) { // A modern constructor
+    this.type = type; // Here we declare the various data attributes
+  }
+
+  speak(line) { // A method 
+    console.log(`The ${this.type} rabbit says '${line}'`);
+  }
+}
+
+// Under the hood:
+// a class == {a prototype defining methods} + {a set of attributes specified by a constructor}
+
+// This is how we call a constructor : 
+let killerRabbit = new Rabbit("killer");
+
+// The class name 'Rabbit' is assimilated to its constructor, so Rabbit's proto is Function.prototype
+console.log(Object.getPrototypeOf(Rabbit) == Function.prototype);
+// While the prototype of every instance is Rabbit.prototype which contains the methods.
+console.log(Object.getPrototypeOf(killerRabbit) == Rabbit.prototype);
+
+// That is why JS functions, still today, have a property named "prototype". 
 // /!\ This is not the prototype of the function, this is a property, 
 // named prototype, that is the prototype of the defined type ! 
+console.log(Rabbit.prototype != Object.getPrototypeOf(Rabbit));
 
 // Instead of declaring properties in the constructor we can put them in the class{} :
 class Particle {
@@ -139,8 +133,57 @@ class Particle {
   }
 } // This class has two properties, speed and position. 
 // None of those will be global nor attached to the prototype. They'll be by instance.
+// It's just that 'speed' won't be defined by the constructor. Maybe it's const, 
+// maybe it'll be changed later...
 
 // Defining an anonymous class inline :
 let object = new class { getWord() { return "hello"; } };
- console.log(object.getWord());
+console.log(object.getWord());
+
+/////////////////////////////////////////
+// 4. Private properties
+
+class SecretiveObject {
+  #getSecret() { // This is a private method 
+    return "I ate all the plums";
+  }
+  interrogate() {
+    let shallISayIt = this.#getSecret();
+    return "never";
+  }
+} 
+
+let myObject = new SecretiveObject();
+// interrogate() has the right to call #getSecret and do whatever it wants with it
+console.log(myObject.interrogate()); 
+// But from outside the class I can't :
+// console.log(myObject.#getSecret()); // Try this !
+
+// Private properties must be declared in the class body. 
+class Foo {
+  #bar; // This is compulsory. Try to comment this line !
+  constructor(anything) {
+    this.#bar = anything + 1789;
+  }
+} 
+
+/////////////////////////////////////////
+// 5. Overriding (hiding) derived properties
+
+Rabbit.prototype.teeth = "small";
+console.log(killerRabbit.teeth);
+killerRabbit.teeth = "long, sharp, and bloody"; // We don't get the proto property anymore 
+console.log(killerRabbit.teeth)
+
+// The new instances still benefit from the prototype's property value.
+console.log((new Rabbit("basic")).teeth);
+
+// E.g. : The Array.prototype object, which inherits Object.prototype, overrides 
+// the toString method. Indeed if we try to call Object.prototype.toString on an array :
+console.log(Object.prototype.toString.call([1, 2])); 
+// This is very different from what the toString method usually does! 
+
+
+
+
 
