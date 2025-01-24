@@ -75,11 +75,18 @@ blackRabbit.speak("I am fear and darkness");
 
 // The objects created from the prototype will have the same methods. So it's as if they were
 // all instances of the same ... class.
-// The problem is that it is quite error-prone : for example the speak() method refers to "this.type"
-// As there is no real interface/contract/attribute list, it's easy to create an object from 
-// the prototype and forget about defining that property. We have to set that "type" property 
-// manually. 
 
+// All techniques presented in the latter points are derived from that prototype chain 
+// idea. Those techniques give us something we didn't have with the object factory (cf newPoint) :
+// an actual chain of inheritance, and also the fact that we won't duplicate the same methods 
+// ever and ever in memory when creating instances.
+
+// The problem of that prototype object creation is that it's quite error-prone : 
+// e.g. the speak() method refers to "this.type", but as there's no concrete interface/contract
+// or attribute list, it's easy to create an object from the prototype and forget 
+// about defining that property. We have to set that "type" property manually. 
+
+// But we'll gradually improve that, first with constructors. 
 // Constructors are like the newPoint method we created before : they encapsulate "what's needed"
 // to build an object but they also specify the attributes of the object.
 
@@ -183,7 +190,74 @@ console.log((new Rabbit("basic")).teeth);
 console.log(Object.prototype.toString.call([1, 2])); 
 // This is very different from what the toString method usually does! 
 
+/////////////////////////////////////////
+// 6. Maps
 
+// We can be tempted by this : 
+let myMap = {
+  key1: "value1", 
+  key2: 543,
+  key3: "Babar" 
+};
 
+console.log(myMap.key3);
 
+// Since it is an object it inherits from Object.prototype. So sadly : 
+console.log("toString" in myMap); // true
+// We can still use Object.hasOwn since it uses Object.keys and doesn't include proto's properties:
+console.log(Object.hasOwn(myMap, "toString")); // false
+// ... but this won't be very efficient. 
 
+// So all of this is dangerous. Instead we can use the Map type : 
+let myMap2 = new Map();
+myMap2.set("value1", 39);
+myMap2.set(543, 22);
+myMap2.set("Babar", 62);
+console.log(myMap2);
+
+// Bad things can still happen silently, sadly :
+myMap2["dog"] = "Bob";
+console.log(myMap2.has("dog")); // false: we added a property to the object! It didn't populate the map
+myMap.dog = "Babar"; // Same thing.
+console.log(myMap2.has("dog"));
+
+/////////////////////////////////////////
+// 7. Getters and setters, static methods 
+
+// A getter
+let varyingSize = {
+  get size() { // This is a special property that, when read, actually calls a method
+  return Math.floor(Math.random() * 100);
+  }
+};
+
+console.log(varyingSize.size);
+//console.log(varyingSize.size()); // Not a function! from an outside POV...
+// With that getter, we didn't specify a way to modify the property -> it is Read-Only. 
+// varyingSize.size = 22222222; // Try this!
+
+class Temperature {
+  constructor(celsius) {
+    this.celsius = celsius;
+  }
+  get fahrenheit() {
+    return this.celsius * 1.8 + 32;
+  }
+  set fahrenheit(value) {
+    this.celsius = (value- 32) / 1.8;
+  }
+  static fromFahrenheit(value) {
+    return new Temperature((value- 32) / 1.8);
+  }
+} 
+
+// Above, that Temperature class has two properties, celsius and fahrenheit.
+
+// The static methods are called like that : 
+let myTemperature = Temperature.fromFahrenheit(100);
+// Similarly to other OOP languages, static methods can be used for 
+// factories or any other kind of procedural code that the class wants 
+// to make available to the user. 
+
+/////////////////////////////////////////
+// 8. Symbols 
