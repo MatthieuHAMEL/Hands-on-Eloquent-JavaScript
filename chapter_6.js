@@ -28,8 +28,7 @@ let point2 = {
 point2.translate(5, 5);
 console.log(point2);
 
-// 2. Prototypes : producing instances of objects 
-
+// 2. Prototypes and OOP : producing instances of objects 
 // I can do this to produce points : 
 
 function newPoint(x, y) {
@@ -48,8 +47,10 @@ p.translate(12, 10);
 console.log(p);
 let p2 = newPoint(0, 0); // etc etc 
 
-// That would be a bit confusing to create functions like that for every type we want. 
-// Objects are fortunately tied to prototypes that are sorts of meta-objects.
+// We could create functions like that for every type we want but this would be quite repetitive
+// Besides there will be N instances of the method speak() if we create N objects while we know 
+// this is the same method for all objects. So there should be one speak() method !
+// Objects are fortunately tied to prototypes that are like meta-objects.
 
 console.log(Object.getPrototypeOf({}) == Object.prototype);
 
@@ -80,7 +81,8 @@ console.log(blackRabbit.x);
 // create objects sharing the proto's properties. But this may be error-prone: 
 // for example the speak() method of protoRabbit refers to the property "this.type". 
 // As there is no contract, no real interface nor attribute list, it is easy to 
-// create an object from the proto and forget about defining that property. 
+// create an object from the proto and forget about defining that property. We have to 
+// set that "type" property manually. 
 
 // Classes are closer to what is done in modern OOP, as it defines the shape of an object, 
 // i.e. its methods and properties. 
