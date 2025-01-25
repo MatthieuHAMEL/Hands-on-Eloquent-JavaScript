@@ -69,7 +69,7 @@ function runRobot(state, robot, memory) {
   for (let turn = 0;; turn++) {
     if (state.parcels.length == 0) { // No parcel left 
       console.log(`Done in ${turn+1} turns`);
-      break;
+      return turn+1;
     }
     let action = robot(state, memory); // action == {direction, memory}
     state = state.move(action.direction);
@@ -126,3 +126,117 @@ function routeRobot(state, memory) {
 // There is clearly an upper bound (26) to the number of steps thanks to this strategy 
 runRobot(VillageState.random(3500), routeRobot, 0); 
 
+// Path finding 
+function findRoute(graph, from, to) {
+  let work = [{at: from, route: []}];
+  for (let i = 0; i < work.length; i++) {
+    let {at, route} = work[i];
+    for (let place of graph[at]) {
+      if (place == to) return route.concat(place);
+      if (!work.some(w => w.at == place)) {
+        work.push({at: place, route: route.concat(place)});
+      }
+    }
+  }
+}
+
+function goalOrientedRobot({place, parcels}, route) {
+  if (route.length == 0) {
+    // Consider the first parcel on the list
+    let parcel = parcels[0]; 
+    if (parcel.place != place) { // Fetch that parcel ! We may enter here N times if route is N-sized
+      route = findRoute(roadGraph, place, parcel.place);
+    } else { // We have the parcel : go to its destination
+      route = findRoute(roadGraph, place, parcel.address);
+    }
+  }
+  return {direction: route[0], memory: route.slice(1)};
+}
+
+runRobot(VillageState.random(3500), goalOrientedRobot, []); 
+/////////////////////////////////////////
+// Exercises 
+/////////////////////////////////////////
+// I. Measuring a robot 
+
+function compareRobots(robot_1, memory_1, robot_2, memory_2) {
+  let [total_1, total_2] = [0, 0];
+  for (let i = 0; i < 100; i++) {
+    let state = VillageState.random(5); // A priori we still have 5 parcels for the test
+    total_1 += runRobot(state, robot_1, memory_1);
+    total_2 += runRobot(state, robot_2, memory_2);
+  }
+  return [total_1/100, total_2/100];
+}
+
+// routeRobot is clearly better than randomRobot 
+console.log(compareRobots(randomRobot, null, routeRobot, 0));
+
+// goalOrientedRobot is better than routeRobot, at least for 5 parcels to deliver.
+console.log(compareRobots(goalOrientedRobot, [], routeRobot, 0));
+
+/////////////////////////////////////////
+// II. Robot efficiency 
+
+// Lazy answer :
+
+// If we consider a lot more than 5 parcels (try with 500) to deliver, routeRobot 
+// is actually better than goalOrientedRobot. 
+// There's a clear upper bound (26) on the number of steps for routeRobot, 
+// and the average number of steps may be higher for goalOrientedRobot.
+// Empirically, the latter is often passing to the same places depending on 
+// the parcel it considers - since it considers only the first. 
+// Imagine there are 5 places : A B C D E. While the upper bound is 10 steps for 
+// routeRobot, the goalOrientedRobot starting in C can do :
+// C - D - C - B - C - D - E - D - C - B - A
+// If there are parcels to deliver in A, B, D, E and if the 
+// targeted parcels are, in order : D, B, E, A
+// And this is 11 steps ! So if the set of places to deliver is 'dense' enough 
+// The robot easily goes to a very sub-optimized path.
+
+// Non-lazy answer :
+// Instead of taking one parcel and traversing potentially the whole village 
+// to deliver it, I'll try instead to consider every parcel and find the route 
+// that is the shortest for our robot. (So it's the robot's turn to be lazy! :) )
+// (computed routes will be either roads to deliver some parcel we have, or roads to get a parcel)
+// Intuitively this will minimize the total steps but I don't know yet if it's gonna work.
+
+function lazyRobot({place, parcels}, route) {
+  if (route.length == 0) { 
+    let chosenRoute = null;
+    for (let parcel of parcels) { // We know there are parcels, by construction... 
+      // Either the parcel is elsewhere, we calculate the route to it
+      let curRoute = null;
+      if (parcel.place != place) { 
+        curRoute = findRoute(roadGraph, place, parcel.place);
+      }
+      else {
+        // The other parcels are those we have in our pocket 
+        curRoute = findRoute(roadGraph, place, parcel.address);
+      }
+
+      if (chosenRoute == null || curRoute.length < chosenRoute.length) {
+        // That route is shorter than what we had, so, retain it 
+        chosenRoute = curRoute;
+      }
+    }
+    return {direction: chosenRoute[0], memory: chosenRoute.slice(1)}
+  }
+  // Else just follow the road. Don't look elsewhere!
+  return {direction: route[0], memory: route.slice(1)};
+}
+
+console.log("Exercise II");
+console.log(compareRobots(goalOrientedRobot, [], lazyRobot, []));
+// Yippee ! [ 15.79, 13.45 ] for 5 parcels. 
+// My lazyRobot is still better  than goalOrientedRobot for 50 or 500 parcels.
+// Though it is still worse than routeRobot for a big number of parcels.
+
+// So it is clearly not optimal and I will try, later, try to find if graph 
+// theory can help me to find an even better solution. 
+
+// Also, the lazyRobot is more CPU intensive since we're computing a lot more 
+// routes (5 per step, vs 1 per step for the goalOrientedRobot) just to 
+// have 2 less steps in average at the end (with 5 parcels...). 
+// (But in the real world this would be neglictible compared to the fuel or 
+// electricity price!!!)  
