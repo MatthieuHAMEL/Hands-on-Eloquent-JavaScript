@@ -178,23 +178,21 @@ console.log(compareRobots(goalOrientedRobot, [], routeRobot, 0));
 /////////////////////////////////////////
 // II. Robot efficiency 
 
-// Lazy answer :
-
+// LAZY ANSWER :
 // If we consider a lot more than 5 parcels (try with 500) to deliver, routeRobot 
 // is actually better than goalOrientedRobot. 
 // There's a clear upper bound (26) on the number of steps for routeRobot, 
 // and the average number of steps may be higher for goalOrientedRobot.
-// Empirically, the latter is often passing to the same places depending on 
-// the parcel it considers - since it considers only the first. 
-// Imagine there are 5 places : A B C D E. While the upper bound is 10 steps for 
-// routeRobot, the goalOrientedRobot starting in C can do :
+// Empirically, I found that the latter is often passing to the same places 
+// several times, depending on the parcel it considers - since it targets only the first. 
+// Imagine there are 5 places in a linear path: A B C D E.
+// While the upper bound is 10 steps for routeRobot, the goalOrientedRobot starting in C may do :
 // C - D - C - B - C - D - E - D - C - B - A
-// If there are parcels to deliver in A, B, D, E and if the 
-// targeted parcels are, in order : D, B, E, A
+// If there are parcels to deliver in A, B, D, E and if the targets are, in order : D, B, E, A
 // And this is 11 steps ! So if the set of places to deliver is 'dense' enough 
-// The robot easily goes to a very sub-optimized path.
+// The robot can easily end up with a very sub-optimized path.
 
-// Non-lazy answer :
+// LESS LAZY ANSWER :
 // Instead of taking one parcel and traversing potentially the whole village 
 // to deliver it, I'll try instead to consider every parcel and find the route 
 // that is the shortest for our robot. (So it's the robot's turn to be lazy! :) )
@@ -210,8 +208,7 @@ function lazyRobot({place, parcels}, route) {
       if (parcel.place != place) { 
         curRoute = findRoute(roadGraph, place, parcel.place);
       }
-      else {
-        // The other parcels are those we have in our pocket 
+      else { // The other parcels are those we have in our pocket
         curRoute = findRoute(roadGraph, place, parcel.address);
       }
 
@@ -229,7 +226,7 @@ function lazyRobot({place, parcels}, route) {
 console.log("Exercise II");
 console.log(compareRobots(goalOrientedRobot, [], lazyRobot, []));
 // Yippee ! [ 15.79, 13.45 ] for 5 parcels. 
-// My lazyRobot is still better  than goalOrientedRobot for 50 or 500 parcels.
+// My lazyRobot is still better than goalOrientedRobot for 50 or 500 parcels.
 // Though it is still worse than routeRobot for a big number of parcels.
 
 // So it is clearly not optimal and I will try, later, try to find if graph 
@@ -240,3 +237,47 @@ console.log(compareRobots(goalOrientedRobot, [], lazyRobot, []));
 // have 2 less steps in average at the end (with 5 parcels...). 
 // (But in the real world this would be neglictible compared to the fuel or 
 // electricity price!!!)  
+
+/////////////////////////////////////////
+// III. Persistent group 
+
+class PGroup {
+  #set;
+  constructor(iArr) {
+    this.#set = iArr; 
+  }
+
+  add(iVal) {
+    if (!this.#set.includes(iVal)) {
+      return new PGroup(this.#set.concat(iVal));
+    }
+    return this;
+  }
+
+  delete(iVal) {
+    if (this.#set.includes(iVal)) {
+      return new PGroup(this.#set.filter(elt => elt !== iVal));
+    }
+    return this;
+  }
+
+  has(iVal) {
+    return this.#set.includes(iVal);
+  }
+
+  toString() {
+    return `{ ${this.#set.join(', ')} }`;
+  }
+}
+
+PGroup.empty = new PGroup([]); // It won't be affected so we just need one. 
+
+let myFirstPGroup = PGroup.empty.add("Babar");
+console.log(myFirstPGroup.toString()); 
+let mySecondPGroup = myFirstPGroup.add(1515);
+console.log(myFirstPGroup.toString()); // Still Babar 
+console.log(mySecondPGroup.toString()); // Babar and 1515 
+let myThirdPGroup = mySecondPGroup.delete(2);
+console.log(mySecondPGroup.toString()); // still Babar and 1515 
+console.log(myThirdPGroup.toString()); // still Babar and 1515
+console.log(myThirdPGroup.has(1515)); // true
