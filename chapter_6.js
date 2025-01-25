@@ -101,8 +101,17 @@ ArchaicRabbit.prototype.someMethod = function(a) {
   // ...
 };
 
+// Now we can do that thanks to the prototype chain and constructors identifying the type
+// And this will work even with N levels of inheritance.
+console.log("instanceof(test 1)"); 
+console.log([1] instanceof Array);
+console.log("instanceof(test 2)"); 
+console.log(myArchaicRabbit instanceof ArchaicRabbit); 
+console.log("instanceof(test 3)"); 
+console.log(myArchaicRabbit instanceof Array); 
+
 /////////////////////////////////////////
-// 3. Classes (introduced in 2015)
+// 3. Classes (introduced in 2015) and inheritance
 // Classes are closer to what is done in modern OOP, as it defines the shape of an object, 
 // i.e. its methods and properties, in a more expressive way : 
 
@@ -147,6 +156,39 @@ class Particle {
 let object = new class { getWord() { return "hello"; } };
 console.log(object.getWord());
 
+// This is how inheritance happens with this syntax : 
+
+class List {
+  constructor(value, rest) {
+    this.value = value;
+    this.rest = rest;
+  }
+  get length() {
+    return 1 + (this.rest ? this.rest.length : 0);
+  }
+  static fromArray(array) {
+    let result = null;
+    for (let i = array.length- 1; i >= 0; i--) {
+      result = new this(array[i], result);
+    }
+    return result;
+  }
+}
+
+class LengthList extends List {
+  #length;
+  constructor(value, rest) {
+    super(value, rest);
+    // /!\ We're not assigning the length() method defined in List, since it is 
+    // a property, we're calling length and storing the result in #length
+    // This means the optimization is valid (we won't recurse every time we call
+    // LengthList.length) but it won't be synchronized if the list actually changes!
+    this.#length = super.length; 
+  }
+  get length() {
+    return this.#length;
+  }
+}
 /////////////////////////////////////////
 // 4. Private properties
 
@@ -324,4 +366,128 @@ console.log(okIterator.next());
 // → {value: undefined, done: true}
 
 // It's possible to use a for..of loop on any object implementing that special iterator method.
+
+/////////////////////////////////////////
+// Exercises
+/////////////////////////////////////////
+// I. A vector type 
+
+/* 
+Write a class Vec that represents a vector in two-dimensional space. It takes x
+ and y parameters (numbers), that it saves to properties of the same name.
+ Give the Vec prototype two methods, plus and minus, that take another
+ vector as a parameter and return a new vector that has the sum or difference
+ of the two vectors’ (this and the parameter) x and y values.
+ Add a getter property length to the prototype that computes the length of
+ the vector—that is, the distance of the point (x, y) from the origin (0, 0).
+ */
+
+class Vec {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  get length() {
+    return Math.sqrt(this.x**2 + this.y**2);
+  }
+
+  plus(iVec) {
+    return new Vec(this.x + iVec.x, this.y + iVec.y);
+  }
+
+  minus(iVec) {
+    return new Vec(this.x - iVec.x, this.y - iVec.y);
+  }
+}
+
+let myVector = new Vec(2, 3);
+console.log(myVector);
+console.log(myVector.length); // sqrt(15)
+let myOtherVector = myVector.plus(new Vec(1, 1));
+console.log(myOtherVector); // Vec with (3, 4) coordinates
+let myThirdVector = myOtherVector.minus(myVector);
+console.log(myThirdVector); // Vec with (1, 1) coordinates
+
+/////////////////////////////////////////
+// II. Groups (a set structure)
+
+class Group {
+  #set;
+  constructor() {
+    this.#set = []; // Of course I could use the built-in Set class internally but that's cheating
+  }
+
+  add(iVal) {
+    if (!this.#set.includes(iVal)) {
+      this.#set.push(iVal);
+    }
+  }
+
+  delete(iVal) {
+    const index = this.#set.indexOf(iVal);
+    if (index > -1) {
+      this.#set.splice(index, 1);
+    }
+  }
+
+  has(iVal) {
+    return this.#set.includes(iVal);
+  }
+
+  toString() {
+    return `{ ${this.#set.join(', ')} }`;
+  }
+
+  static from(iIterable) {
+    let group = new Group();
+    for (let elt of iIterable) {
+      group.add(elt);
+    }
+    return group;
+  }
+
+  // This is exercise III.
+  [Symbol.iterator]() {
+    let index = 0;
+    const items = this.#set; // for the closure.. this way I don't have to make #set public  
+    return {
+      next() {
+        if (index < items.length) {
+          return { value: items[index++], done: false };
+        } else {
+          return { done: true };
+        }
+      }
+    };
+  }
+}
+
+let mySet = new Group();
+console.log(mySet.toString());
+mySet.add(2);
+mySet.add("Babar");
+console.log(mySet.toString());
+mySet.add("Babar");
+console.log(mySet.toString());
+console.log(mySet.has("Babar")); // true
+console.log(mySet.has("babar")); // false
+mySet.delete("Babar");
+console.log(mySet.has("Babar")); // false
+console.log(mySet.toString());
+// Of course it would require much more tests. ...
+
+let myOtherSet = Group.from([null, 2, 3, "Babar"]);
+console.log(myOtherSet.toString());
+
+/////////////////////////////////////////
+// III. Iterable Groups
+
+// I can't use an class defined externally "GroupIterator" like the ListIterator 
+// showed in the book, because I want to keep #set (the internal array) private.
+// So I defined the method internally and the next() method captures the private attribute.
+
+for (const elt of myOtherSet) {
+  console.log(elt);
+}
 
