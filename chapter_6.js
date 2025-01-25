@@ -309,3 +309,19 @@ console.log(myTrip[length], myTrip.length);
 /////////////////////////////////////////
 // 9. The iterator interface 
 
+// A concrete example of those (quite abstract) polymorphism considerations is the 
+// Symbol.iterator value, it is a special symbol available in the language. 
+// If I want my object to be iterable, It must have the [Symbol.iterator] method.
+// This method returns an object on which the next() method is available. 
+
+// This is what happens when we do a for..of on a string :
+let okIterator = "OK"[Symbol.iterator]();
+console.log(okIterator.next());
+// → {value: "O", done: false}
+console.log(okIterator.next());
+// → {value: "K", done: false}
+console.log(okIterator.next());
+// → {value: undefined, done: true}
+
+// It's possible to use a for..of loop on any object implementing that special iterator method.
+
