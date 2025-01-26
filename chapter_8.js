@@ -29,3 +29,84 @@ function canYouSpotTheProblem() {
 
 /////////////////////////////////////////
 // 2. Types
+// Cf. TypeScript for a strongly-typed and statically-typed "extension" of JS
+
+/////////////////////////////////////////
+// 3. Testing 
+
+function test(label, body) {
+  if (!body()) console.log(`Failed: ${label}`);
+}
+
+test("convert Latin text to uppercase", () => {
+  return "hello".toUpperCase() == "HELLO";
+});
+  
+test("convert Greek text to uppercase", () => {
+  return "Χαίρετε".toUpperCase() == "ΧΑΊΡΕΤΕ";
+});
+
+// Test suites help a lot. cf Jest and https://bun.sh/docs/test/writing
+
+/////////////////////////////////////////
+// 4. Exceptions
+
+function promptDirection(question) {
+  // let result = prompt(question); // Uncomment this !
+  let result = "Something wrong"; // Comment this !
+  if (result.toLowerCase() == "left") return "L";
+  if (result.toLowerCase() == "right") return "R";
+  throw new Error("Invalid direction: " + result); // Object with a message and a stack property
+}
+
+function look() {
+  if (promptDirection("Which way?") == "L") {
+    return "a house";
+  } else {
+    return "two angry bears";
+  }
+}
+
+try {
+  console.log("You see", look());
+} catch (error) {
+  console.log("Something went wrong: " + error);
+  console.log(error.stack);
+}
+
+// Exceptions can be dangerous and lead to logic errors ; the finally{} block can help.
+
+// If an exception is left uncaught, the behaviour of the programs depends on the environment, 
+// browsers just print the stacktrace, Node-like envs abort the whole program.
+
+// Selective catching : here we catch all exceptions but since we misspelled 'promptDirection'
+// the loop will not end ever. 
+/*
+for (;;) {
+  try {
+    let dir = promtDirection("Where?"); // ← typo!
+    console.log("You chose ", dir);
+    break;
+  } catch (e) {
+    console.log("Not a valid direction. Try again.");
+  }
+}
+*/ 
+// -> Don't assume that an exception is the one you expected! 
+// There can be other exceptions in the code you call
+
+// We can use type checking to filter exceptions 
+class InputError extends Error {}
+// throw new InputError("...");
+try {
+  // ... 
+  throw new InputError("...");
+} catch (e) {
+  if (e instanceof InputError) {
+    console.log("Not a valid direction. Try again.");
+  } else {
+    throw e; // Rethrow since we don't really care of other exceptions (we don't expect them...)
+  }
+}
+
+
