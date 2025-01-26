@@ -109,4 +109,68 @@ try {
   }
 }
 
+/////////////////////////////////////////
+// Exercises 
+/////////////////////////////////////////
+// I. Retry
+
+class MultiplicatorUnitFailure extends Error{};
+
+function primitiveMultiply(a, b) {
+  if (Math.random() < 0.2) {
+    return a * b;
+  } else {
+    throw new MultiplicatorUnitFailure("I am not a very stable function...");
+  }
+} 
+
+for (;;) {
+  try {
+    primitiveMultiply(50, 50);
+    break;
+  }
+  catch (e) {
+    if (e instanceof MultiplicatorUnitFailure) {
+      console.log(e.message);
+      console.log("I'll guess I'll just try again ...")
+    }
+    else {
+      throw e;
+    }
+  }
+}
+
+/////////////////////////////////////////
+// II. The locked box 
+
+const box = new class {
+  locked = true;
+  #content = [];
+  unlock() { this.locked = false; }
+  lock() { this.locked = true; }
+  
+  get content() {
+    if (this.locked) throw new Error("Locked!");
+    return this.#content;
+  }
+};
+
+function withBoxUnlocked(func) {
+  box.unlock();
+  try {
+    func();
+  }
+  finally {
+    box.lock();
+  }
+}
+
+try {
+  withBoxUnlocked(() => {throw new Error("Oops")});
+} catch (e) {
+  // ... 
+}
+console.log(box.locked); // locked !
+
+
 
