@@ -229,7 +229,7 @@ console.log(compareRobots(goalOrientedRobot, [], lazyRobot, []));
 // My lazyRobot is still better than goalOrientedRobot for 50 or 500 parcels.
 // Though it is still worse than routeRobot for a big number of parcels.
 
-// So it is clearly not optimal and I will try, later, try to find if graph 
+// So it is clearly not optimal and I will try, later, to find if graph 
 // theory can help me to find an even better solution. 
 
 // Also, the lazyRobot is more CPU intensive since we're computing a lot more 
