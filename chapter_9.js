@@ -300,3 +300,36 @@ console.assert(!"Bebar".match(r7));
 console.assert("Babar and bananas".match(r7));
 console.assert("Bebar and bananas".match(r7)); // true because there are words not containing 'e'.
 
+///////////////////////////////////////////
+// II - Quoting style 
+
+let myStory =  // the story of my life 
+`'I've' always been fascinated in 'Mediterranean' cuisine. 
+It shows us that you can do the best 'things' with a few simple ingredients, 
+but that 'little details' may be crucial ... aren't they ? 
+In fact, all programmers should learn to cook!`;
+
+// Let's replace single quotes by double quotes but without changing <aren't> and <I've>.
+// Single quotes that have letters before and after are considered grammar contractions. 
+// This is how I'd match those single quotes: /\p{L}'\p{L}/
+
+// 1) General rule : 
+// if there's something that's not a letter before or after we consider it's a real double 
+// quote. (like before or after a space, a punctuation symbol, ...)
+// 2) If the beginning of the string is followed by a single quote it must match too
+// 3) If a single quote is right before the end of the string, it must match too.
+let mySingleQuoteRegExp = /(?<=(^|\P{L}))'|'(?=(\P{L}|$))/gu;
+
+let myStory2 = myStory.replace(mySingleQuoteRegExp, "\"");
+console.log(myStory2);
+
+// Less interesting content but necessary to test 2 and 3 ... :) 
+let myComplicatedString = 
+`'Hello' everyone. This is a more complicated 'string'.
+It's including a 'few' 'corner cases'...! Testing corner 
+cases is always 'useful'
+... isn't it? 'Goodbye'`;
+let myComplicatedResult = myComplicatedString.replace(mySingleQuoteRegExp, "\"");
+console.log(myComplicatedResult);
+
+
