@@ -253,3 +253,50 @@ console.log("  word".search(/\S/));  // would return -1 if not found. Here, 2
 
 // ... But we can't make it start at a given position ! ... 
 
+/////////////////////////////////////////
+// EXERCISES 
+///////////////////////////////////////////
+// I -  Regexp Golf
+
+// 1. car and cat 
+let r1 = /ca[rt]/; 
+console.assert("cat".match(r1)); 
+console.assert("car".match(r1)); 
+console.assert("This is my cat's car".match(r1));
+console.assert(!"Babar".match(r1));
+
+// 2. pop and prop
+let r2 = /pr?op/;
+console.assert("prop".match(r2)); 
+console.assert("pop".match(r2)); 
+console.assert("poporico".match(r2));
+console.assert("proporico".match(r2));
+console.assert(!"piop".match(r2));
+
+// 3. ferret, ferry and ferrari 
+let r3 = /ferr(et|erry|ari)/;
+console.assert("The ferret embarks on the ferry with its ferrari".match(r3)); 
+console.assert(!"Babar doesn't know how to spell \"ferari\"".match(r3)); 
+
+// 4. Any word ending in ious
+let r4 = /\p{L}*ious/u;
+console.assert("Obvious".match(r4));
+console.assert(!"Jealous".match(r4));
+
+// 5. A whitespace character followed by a period, comma, colon, or semicolon
+let r5 = /\s[.,:;]/;
+console.assert("La noia è il desiderio della felicità ,lasciato, per così dir, puro.".match(r5));
+console.assert(!"Babar embarks on the ferry with his ferrari".match(r5));
+
+// 6. A word longer than six letters
+let r6 = /\p{L}{6}/u;
+console.assert(!"Babar likes to use short words".match(r6));
+console.assert("Babar does not like extraordinary long words".match(r6));
+
+// 7. A word without the letter e (or E)
+let r7 = /\b[^e]+?\b/i; // \b for word boundaries 
+console.assert("Babar".match(r7));
+console.assert(!"Bebar".match(r7));
+console.assert("Babar and bananas".match(r7));
+console.assert("Bebar and bananas".match(r7)); // true because there are words not containing 'e'.
+
