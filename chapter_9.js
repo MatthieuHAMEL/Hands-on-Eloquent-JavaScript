@@ -150,5 +150,106 @@ both : the regex should match the whole stirng.
 // /a(?=e)/  : match a, but only if there is an e after it. But the e won't be part of the match!
 // /a(?!e)/  : the opposite operator - matches 'a' without an 'e' after them
 
+/////////////////////////////////////////
+// 10. Choice patterns (the | operator)
 
+let animalCount = /\d+ (pig|cow|chicken)s?/;
+animalCount.test("15 pigs"); // t
+animalCount.test("15 chickens"); // t
+animalCount.test("1 cow"); // t
+animalCount.test("0 pig"); // t 
+animalCount.test("0 pigs"); // t also :) 
+
+/////////////////////////////////////////
+// 11. Backtracking 
+
+// Consider :
+/^([01]+b|[\da-f]+h|\d+)$/;
+
+// Either a binary number followed by b, an hexadecimal number followed by h
+// or a decimal number.
+
+// If we run a naive - character by character - automaton on this regexp using the 
+// input "103", it is clear that we may first, seeing the 1 and the 0, consider it's 
+// a binary number, then going back (backtracking) when seeing the 3, choosing the hex 
+// branch, then falling back to the last branch because we didn't see that 'h' at the end.
+// + and * work with backtracking too : with "abcxe" for the regex /^.*x/, the engine does :
+// - What if .* is "abcxe" ? there's no 'x' after, so ... 
+// - What if .* is "abcx" ? It's an 'e' after, not a 'x' ... so ... 
+// - What if .* is "abc" ? OK
+
+// The match is concluded as ["abcx"], pos 0 to 4.
+
+// We should be aware of backtracking when writing regexps, because some regexps are 
+// more CPU-efficient than others!... 
+
+// Also, if several branches lead to a match, the engine will return after seeing the 
+// first one - which can be different from what we'd have found in other branches!
+
+/////////////////////////////////////////
+// 12. String.replace
+
+let res1 = "papa".replace("p", "m"); // mapa
+let res2 = "Borobudur".replace(/[ou]/, "a"); // "Barobudur" : replace the 1st match by "a"
+let res3 = "Borobudur".replace(/[ou]/g, "a"); // "Barabadar"
+// -> /g is for "global" : replace all matches. 
+
+// We can do even better
+let res4 = "Liskov, Barbara\nMcCarthy, John\nMilner, Robin"
+  .replace(/(\p{L}+), (\p{L}+)/gu, "$2 $1"); // /u is for unicode.
+// We match every group LastName, FirstName and we refer to matched subgroups using $1, $2.
+console.log(res4);
+
+// We can also pass a function as the 2nd parameter of replace ; it will take the same 
+// input as what's returned by exec() but spread in arguments : the match, then every group. 
+// If there's a /g, the function may be called several times. 
+
+/////////////////////////////////////////
+// 13. Greed
+
+let code = "1 /*a*/ + /*b*/ 1";
+let code2 = code.replace(/\/\/.*|\/\*[^]*\*\//g, "");
+// The above regex's intent is to remove comments in a JS (or C) code. 
+// The first parts looks for // with anything after, except a newline (.*)
+// The second part looks for /* then any character repeated, including newline ([^]*), 
+// then */.
+
+// But we see that on the input we gave it, the result is not what we wanted:
+console.log(code2);
+
+//                "1 /*a*/ + /*b*/ 1"
+// The regex matched [-----------] all this zone between the first /* and the last */. Oops!
+
+// Indeed the * repetition operator that we used in [^]* is greedy, just like +, ?, {a,b}.
+// Greedy operators try to match the largest possible strings. 
+
+// Solution : put an ? after a greedy operator to make it non-greedy : *?, ??, +? etc.
+
+let code3 = code.replace(/\/\/.*|\/\*[^]*?\*\//g, "");
+console.log(code3); // 1 + 1 : it works! 
+
+/////////////////////////////////////////
+// 14. Search :
+
+// Search is a bit clunky in JS. 
+
+// "Sticky /y option" : when using exec, using this option means search is made
+// only at the regexp.lastIndex position. 
+
+const str1 = 'table football';
+const regex1 = /foo/y;
+regex1.lastIndex = 6;
+let result = regex1.exec(str1); // result.index == 6 ; lastIndex == 9
+
+// That means we can use it in a loop since the lastIndex is updated, if we do : 
+result = regex1.exec(str1); // It won't work anymore ! we started from 9 !
+console.log(result); // null
+
+// However if the match is not precisely found at lastIndex it will not work. 
+// To enable finding in the whole string we can use /g instead of /y. 
+
+// There is also a search method : it returns the index of the match
+console.log("  word".search(/\S/));  // would return -1 if not found. Here, 2
+
+// ... But we can't make it start at a given position ! ... 
 
