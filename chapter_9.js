@@ -332,4 +332,18 @@ cases is always 'useful'
 let myComplicatedResult = myComplicatedString.replace(mySingleQuoteRegExp, "\"");
 console.log(myComplicatedResult);
 
+///////////////////////////////////////////
+// III - Numbers again
 
+// This was my first try : it didn't take the "alone dot" constraint into account :
+let numberRegExp = /^[+\-]?\d*.?\d*(e[+\-]?\d+)?$/i;
+console.log(numberRegExp.test("1"));
+console.log(numberRegExp.test("1.18"));
+console.log(numberRegExp.test("04.123e12"));
+console.log(numberRegExp.test("-04.123e-12"));
+console.log(numberRegExp.test("+987.E-12"));
+
+// This takes the constraint into account :
+let numberRegExp2 = /[+\-]?(\d*.\d+|\d+.?\d*)(e[+\-]?\d+)*/i;
+console.log(numberRegExp2.test("+987.E-12"));
+console.log(numberRegExp2.test("."));
