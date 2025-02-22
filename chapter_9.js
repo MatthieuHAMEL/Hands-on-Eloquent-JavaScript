@@ -279,7 +279,7 @@ console.assert("The ferret embarks on the ferry with its ferrari".match(r3));
 console.assert(!"Babar doesn't know how to spell \"ferari\"".match(r3)); 
 
 // 4. Any word ending in ious
-let r4 = /\p{L}*ious/u;
+let r4 = /\b\p{L}*ious\b/u; // \b to express word end and start
 console.assert("Obvious".match(r4));
 console.assert(!"Jealous".match(r4));
 
